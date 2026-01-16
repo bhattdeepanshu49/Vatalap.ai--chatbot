@@ -4,9 +4,29 @@ import cors from "cors";
 
 
 const app = express();
+
+// CORS middleware - MUST be before express.json() and all routes
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    
+    next();
+});
+
 app.use(express.json());
 
-// CORS configuration - Allow all origins
+// CORS configuration - Allow all origins (backup)
 const corsOptions = {
     origin: true, // Allow all origins
     credentials: true,
@@ -16,17 +36,8 @@ const corsOptions = {
     optionsSuccessStatus: 200
 };
 
-// Apply CORS to all routes
+// Apply CORS to all routes (backup)
 app.use(cors(corsOptions));
-
-// Handle preflight requests explicitly
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.sendStatus(200);
-});
 
 app.get("/", (req, res) => {
     res.send("Welcome to Vartalap");

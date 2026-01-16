@@ -34,17 +34,27 @@ async function generate(text) {
 }
 
 async function callServer(text) {
-    // Use relative path for production, fallback to localhost for development
-    const apiUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:5050/chat' 
-        : '/api/chat';
+    // Determine API URL based on environment
+    let apiUrl;
+    const hostname = window.location.hostname;
+    
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        // Local development
+        apiUrl = 'http://localhost:5050/chat';
+    } else if (hostname.includes('vercel.app')) {
+        // Production - use separate backend URL
+        apiUrl = 'https://vatalap-ai-backend.vercel.app/chat';
+    } else {
+        // Fallback to relative path (same domain deployment)
+        apiUrl = '/api/chat';
+    }
     
     const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: text,threadId }),
+        body: JSON.stringify({ message: text, threadId }),
     });
 
     if (!response.ok) {

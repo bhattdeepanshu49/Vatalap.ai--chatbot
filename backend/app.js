@@ -5,7 +5,27 @@ import cors from "cors";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+// CORS configuration
+const corsOptions = {
+    origin: [
+        'https://vatalap-ai-bot.vercel.app',
+        'https://vatalap-ai-chat.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:8000',
+        'http://127.0.0.1:5500',
+        /\.vercel\.app$/
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 app.get("/", (req, res) => {
     res.send("Welcome to Vartalap");

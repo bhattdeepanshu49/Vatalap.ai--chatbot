@@ -6,26 +6,27 @@ import cors from "cors";
 const app = express();
 app.use(express.json());
 
-// CORS configuration
+// CORS configuration - Allow all origins
 const corsOptions = {
-    origin: [
-        'https://vatalap-ai-bot.vercel.app',
-        'https://vatalap-ai-chat.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:8000',
-        'http://127.0.0.1:5500',
-        /\.vercel\.app$/
-    ],
+    origin: true, // Allow all origins
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
     optionsSuccessStatus: 200
 };
 
+// Apply CORS to all routes
 app.use(cors(corsOptions));
 
-// Handle preflight requests
-app.options('*', cors(corsOptions));
+// Handle preflight requests explicitly
+app.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(200);
+});
 
 app.get("/", (req, res) => {
     res.send("Welcome to Vartalap");
@@ -34,6 +35,13 @@ app.get("/chat",(req,res)=>{
     res.send("Welcome to Chat");
 })
 app.post("/chat", async (req, res) => {
+    // Set CORS headers manually as backup
+    const origin = req.headers.origin;
+    if (origin) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+    }
+    
     try {
         const { message ,threadId} = req.body;
 
